@@ -18,6 +18,7 @@ import (
 	legoChallenge "github.com/go-acme/lego/v3/challenge"
 	lego "github.com/go-acme/lego/v3/lego"
 	legoRegistration "github.com/go-acme/lego/v3/registration"
+	dns01 "github.com/go-acme/lego/v3/challenge/dns01"
 )
 
 const (
@@ -128,7 +129,12 @@ func NewClient(email string, kt KeyType, apiVer ApiVersion, dnsResolvers []strin
 	}
 
 	if challenge == legoChallenge.DNS01 {
-		err = client.Challenge.SetDNS01Provider(prov)
+		if len(dnsResolvers) > 0 {
+			err = client.Challenge.SetDNS01Provider(prov, dns01.AddRecursiveNameservers(dnsResolvers))
+		} else {
+			err = client.Challenge.SetDNS01Provider(prov)
+		}
+		
 		if err != nil {
 			return nil, fmt.Errorf("Could not set provider: %v", err)
 		}
